@@ -2,14 +2,14 @@
 
 
 ## Chosen Databases
-- [MongoDB](https://docs.mongodb.com/): Document-Oriennted  
+- [MongoDB](https://docs.mongodb.com/): Document-Oriented  
 - [Redis](https://redis.io/documentation): Key-Value  
 
 ## Chosen Dataset
 - [E-commerce with 541.906 rows](https://www.kaggle.com/carrie1/ecommerce-data/data) on Kaggle
 
 ## Setup
-- [Populate the Redis databse with this C# tool](https://github.com/DBois/RedisPopulator)  
+- [Populate the Redis database with this C# tool](https://github.com/DBois/RedisPopulator)  
 - With MongoDB's Compass you can just load the CSV file. If using the console, you can use this command: `mongoimport --type csv -d <DBNAME> -c <COLLECTION_NAME> --headerline --drop <FILENAME>.csv`  
 
 
@@ -24,6 +24,11 @@ With the Redis-CLI you can not search for or update multiple hashes at the same 
 With MongoDB you can use the ManyUpdate command to update several several documents at the same time. `db.orders.updateMany({InvoiceNo: "536365"},{$set: {Country: "Denmark"}});`
 
 ### Insert
+**Redis**: Same is with search and update, you have to insert one at a time. Your options are to write a script in a programming language or find a 3rd party tool  
+**MongoDB**: With MongoDB you can make bulk inserts with giving a list of objects with the a command like this: `db.orders.insertMany([list of objects])`
+![Image depicting use of insertMany command](https://i.imgur.com/S8ZRgEZ.png)  
+We compared the insertion performance of both MongoDB and Redis, by inserting 100.000 elements from a C# program. As we can see in the results below, Redis is almost double as fast when not using insertMany from MongoDB:  
+![Comparison of insertion of 100000 elements in Redis and MongoDB. Redis took almost 10 seconds, and MongoDB took 18 seconds.](https://i.imgur.com/4GtYFXx.png)
 
 
 ### Migrating data
@@ -89,21 +94,33 @@ For example, if we want to index our orders by country, we would have to include
 
 ## Security
 
-**MongoDB**:
+**MongoDB**:  
 **Redis**: 
+
 
 ## Storage
 
-**MongoDB**:
-**Redis**: 
+**MongoDB**: Disk as JSON  
+WiredTiger Storage Engine (Default) _or_  In-Memory Storage Engine  
+Reference: [Storage engines](https://docs.mongodb.com/manual/core/storage-engines/)  
+**Redis**: In-memory (RAM)
 
 ## Criteria for comparison
+- Time complexity
+- Ease of use
 
 ## Demo
 
 ## Results and conclusion
-Redis is more troublesome than Mongodb to work with in relation to querying, but is great for supplying very fast responses to those queries.
-Redis is limited by the amount of RAM on the machine. If the datasize exceeds the RAM, you need to incorporate clustering. 
+Redis is more troublesome than MongoDB to work with in relation to querying, but is great for supplying very fast responses to those queries.
+Redis is inherently faster than MongoDB when making individual queries since it is written into RAM. The difference depends on how fast read/write operation you can make to your SSD (or HDD) when using MongoDB. However Mongo is optimised for bulk operations, and can be faster than Redis in those situations. We compared MongoDB's insertMany vs inserting hashes into Redis, the result confirms Mongo is faster for bulk operations.  
+**InsertMany vs Redis HSET in C#**  
+![MongoDB insertMany took almost 9 seconds. Redis insertion took over a minute](https://i.imgur.com/ugCMXH3.png)
+
+
+Since Redis is written in to RAM, it is limited by the amount of RAM you have on the machine. If the datasize exceeds the RAM, you need to incorporate clustering.  Therefore MongoDB has easier scaling. 
+MongoDB is great for prototyping or startups since it is schemaless. 
+
 
 ### ACID and CAP
 **MongoDB**: Consistency - Partition Tolerance, from version 4.0 MongoDB is ACID compliant _Multi-Document Transaction_.   
